@@ -1,28 +1,40 @@
 version: "3.8"
+
 services:
   mariadb:
-    image: ghcr.io/wersplat/mariadb:10.6
+    image: ghcr.io/wersplat/mariadb:10.6      # ← your custom MariaDB
+    container_name: wp-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE:      ${MARIADB_DATABASE}
+      MARIADB_USER:          ${MARIADB_USER}
+      MARIADB_PASSWORD:      ${MARIADB_PASSWORD}
     volumes:
       - mariadb_data:/bitnami/mariadb
-    environment:
-      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
-      - MARIADB_DATABASE=${MARIADB_DATABASE}
-      - MARIADB_USER=${MARIADB_USER}
-      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
 
   wordpress:
-    image: ghcr.io/wersplat/wordpress-nginx:latest   # we’ll push here
+    image: ghcr.io/wersplat/wordpress-nginx:latest   # ← your prod build
+    container_name: wp-nginx
+    restart: unless-stopped
+    depends_on:
+      - mariadb
     ports:
       - "80:8080"
       - "443:8443"
-    depends_on:
-      - mariadb
     environment:
-      - WORDPRESS_DATABASE_HOST=mariadb
-      - WORDPRESS_DATABASE_PORT_NUMBER=3306
-      - WORDPRESS_DATABASE_USER=${MARIADB_USER}
-      - WORDPRESS_DATABASE_NAME=${MARIADB_DATABASE}
-      - WORDPRESS_DATABASE_PASSWORD=${MARIADB_PASSWORD}
+      WORDPRESS_DATABASE_HOST:        mariadb
+      WORDPRESS_DATABASE_PORT_NUMBER: 3306
+      WORDPRESS_DATABASE_NAME:        ${MARIADB_DATABASE}
+      WORDPRESS_DATABASE_USER:        ${MARIADB_USER}
+      WORDPRESS_DATABASE_PASSWORD:    ${MARIADB_PASSWORD}
+
+      # for your sync scripts:
+      SUPABASE_URL:                   ${SUPABASE_URL}
+      SUPABASE_SERVICE_ROLE_KEY:      ${SUPABASE_SERVICE_ROLE_KEY}
+    volumes:
+      - wordpress_data:/bitnami/wordpress
 
 volumes:
   mariadb_data:
+  wordpress_data:
