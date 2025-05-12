@@ -1,8 +1,8 @@
 version: "3.8"
-services:
 
+services:
   mariadb:
-    image: ghcr.io/wersplat/mariadb:10.6     # ← your custom MariaDB
+    image: ghcr.io/wersplat/mariadb:10.6
     container_name: wp-mariadb
     restart: unless-stopped
     environment:
@@ -16,7 +16,7 @@ services:
   wordpress:
     build:
       context: .
-      dockerfile: Dockerfile                # ← so compose will rebuild this image
+      dockerfile: Dockerfile
     image: ghcr.io/wersplat/wordpress-nginx:latest
     container_name: wp-nginx
     restart: unless-stopped
@@ -26,20 +26,17 @@ services:
       - "80:8080"
       - "443:8443"
     environment:
-      # core WP <→ MariaDB
       WORDPRESS_DATABASE_HOST:        mariadb
       WORDPRESS_DATABASE_PORT_NUMBER: 3306
       WORDPRESS_DATABASE_NAME:        ${MARIADB_DATABASE}
       WORDPRESS_DATABASE_USER:        ${MARIADB_USER}
       WORDPRESS_DATABASE_PASSWORD:    ${MARIADB_PASSWORD}
 
-      # your sync scripts talk to Supabase
+      # for your sync scripts:
       SUPABASE_URL:                   ${SUPABASE_URL}
       SUPABASE_SERVICE_ROLE_KEY:      ${SUPABASE_SERVICE_ROLE_KEY}
-
-    # persist everything under /opt/bitnami/wordpress
     volumes:
-      - wordpress_data:/opt/bitnami/wordpress
+      - wordpress_data:/bitnami/wordpress
 
 volumes:
   mariadb_data:
